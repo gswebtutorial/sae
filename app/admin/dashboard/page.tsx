@@ -7,6 +7,7 @@ import { Flower, LogOut, CheckCircle2, Clock, Search, Filter, ChevronDown, User,
 const AdminDashboard = () => {
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -26,11 +27,20 @@ const AdminDashboard = () => {
       const res = await fetch('/api/bookings', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      if (!res.ok) throw new Error('Unauthorized');
+      
       const data = await res.json();
+
+      if (!res.ok) {
+        if (res.status === 401) {
+          router.push('/admin');
+          return;
+        }
+        throw new Error(data.error || 'Failed to fetch bookings');
+      }
+      
       setBookings(data.bookings || []);
-    } catch (err) {
-      router.push('/admin');
+    } catch (err: any) {
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -73,6 +83,22 @@ const AdminDashboard = () => {
     reviewed: bookings.filter(b => b.status === 'reviewed').length,
     confirmed: bookings.filter(b => b.status === 'confirmed').length,
   };
+
+  if (error) return (
+    <div className="min-h-screen bg-[#FFF8F0] flex items-center justify-center p-4">
+      <div className="bg-white p-8 rounded-3xl shadow-xl border border-red-200 max-w-md text-center">
+        <div className="text-red-500 mb-4 text-4xl font-bold">⚠️</div>
+        <h2 className="text-xl font-bold text-[#7B1E1E] mb-2 font-serif">Setup Required</h2>
+        <p className="text-gray-600 mb-6 text-sm">{error}</p>
+        <button 
+          onClick={() => window.location.reload()}
+          className="btn-maroon w-full"
+        >
+          Check Again
+        </button>
+      </div>
+    </div>
+  );
 
   if (loading) return (
     <div className="min-h-screen bg-[#FFF8F0] flex items-center justify-center">

@@ -48,6 +48,14 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    if (!supabase) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Database not configured. Please add Supabase keys to .env.local',
+        isConfigurationError: true 
+      }, { status: 503 });
+    }
+
     const { data, error } = await supabase
       .from('bookings')
       .select('*')

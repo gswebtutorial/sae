@@ -56,19 +56,18 @@ export default function Home() {
       <Navbar />
       
       {/* Hero Section */}
-      <section className="relative bg-[#7B1E1E] text-white py-16 px-4 overflow-hidden">
-        <div className="absolute inset-0 opacity-10 pointer-events-none">
-          {/* Subtle floral pattern simulation */}
-          <div className="absolute top-0 left-0 w-64 h-64 border-4 border-[#C9973A] rounded-full -translate-x-1/2 -translate-y-1/2" />
-          <div className="absolute bottom-0 right-0 w-96 h-96 border-4 border-[#C9973A] rounded-full translate-x-1/3 translate-y-1/3" />
-        </div>
+      <section className="relative bg-[#7B1E1E] text-white py-24 px-4 overflow-hidden">
+        <div 
+          className="absolute inset-0 opacity-20 pointer-events-none bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: 'url("/hero-bg.png")' }}
+        />
         
         <div className="max-w-4xl mx-auto text-center relative z-10">
-          <h1 className="text-4xl md:text-6xl font-bold mb-4 text-[#FFF8F0]">
+          <h1 className="text-5xl md:text-7xl font-bold mb-6 text-[#FFF8F0] tracking-tight">
             Plan Your Dream Wedding
           </h1>
-          <p className="text-lg md:text-xl text-[#C9973A] font-light max-w-2xl mx-auto">
-            Select the services you need for your special celebrations. We&apos;ll handle the rest with perfection.
+          <p className="text-xl md:text-2xl text-[#C9973A] font-light max-w-2xl mx-auto font-serif italic">
+            Raipur&apos;s most trusted wedding planners since 2024
           </p>
         </div>
       </section>
