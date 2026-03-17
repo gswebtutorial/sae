@@ -1,0 +1,49 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@300;400;500;600&display=swap');
+@import "tailwindcss";
+
+:root {
+  --primary: #7B1E1E; /* Maroon */
+  --accent: #C9973A;  /* Gold */
+  --background: #FFF8F0; /* Cream */
+  --text-dark: #2C1810; /* Dark Brown */
+}
+
+body {
+  color: var(--text-dark);
+  background: var(--background);
+  font-family: 'Poppins', sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Playfair Display', serif;
+  color: var(--primary);
+}
+
+@layer components {
+  .btn-maroon {
+    background-color: #7B1E1E;
+    color: white;
+    padding: 0.5rem 1.5rem;
+    border-radius: 0.5rem;
+    transition: background-color 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .btn-maroon:hover {
+    background-color: #C9973A;
+  }
+  
+  .card-wedding {
+    background-color: white;
+    border: 1px solid #C9973A;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    transition: box-shadow 0.3s ease;
+  }
+  
+  .card-wedding:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+}
