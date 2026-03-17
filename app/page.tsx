@@ -81,7 +81,7 @@ export default function Home() {
         />
         
         <div className="max-w-4xl mx-auto text-center relative z-10">
-          <h1 className="text-4xl md:text-5xl font-bold mb-2 text-[#FFF8F0] tracking-tight">
+          <h1 className="text-4xl md:text-5xl font-bold mb-2 text-white tracking-tight">
             Plan Your Dream Wedding
           </h1>
           <p className="text-lg md:text-xl text-white font-light max-w-2xl mx-auto font-serif italic mb-4 opacity-90">
