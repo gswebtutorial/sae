@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Flower, LogOut, CheckCircle2, Clock, Search, Filter, ChevronDown, User, Phone, MapPin, Calendar, ExternalLink } from 'lucide-react';
+import EditBookingModal from '@/components/admin/EditBookingModal';
 
 const AdminDashboard = () => {
   const [bookings, setBookings] = useState<any[]>([]);
@@ -11,6 +12,8 @@ const AdminDashboard = () => {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [deletePending, setDeletePending] = useState<string | null>(null);
+  const [editingBooking, setEditingBooking] = useState<any | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -46,6 +49,22 @@ const AdminDashboard = () => {
     }
   };
 
+  const deleteBooking = async (id: string) => {
+    const token = localStorage.getItem('admin_token');
+    try {
+      const res = await fetch(`/api/bookings/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        setBookings(prev => prev.filter(b => b.id !== id));
+        setDeletePending(null);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const updateStatus = async (id: string, status: string) => {
     const token = localStorage.getItem('admin_token');
     try {
@@ -63,6 +82,10 @@ const AdminDashboard = () => {
     } catch (err) {
       console.error(err);
     }
+  };
+
+  const handleUpdateSave = (updatedBooking: any) => {
+    setBookings(prev => prev.map(b => b.id === updatedBooking.id ? updatedBooking : b));
   };
 
   const handleLogout = () => {
@@ -305,14 +328,50 @@ const AdminDashboard = () => {
                         </div>
                       </div>
 
-                      <a 
-                        href={`https://wa.me/${booking.phone}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex items-center justify-center gap-2 w-full bg-[#25D366] text-white py-3 rounded-xl font-bold hover:shadow-lg transition-all"
-                      >
-                        Contact via WhatsApp <ExternalLink size={14} />
-                      </a>
+                      <div className="pt-6 border-t border-[#FFF8F0] space-y-3">
+                        <div className="flex gap-3">
+                          <button
+                            onClick={() => setEditingBooking(booking)}
+                            className="flex-grow bg-white border border-[#C9973A] text-[#7B1E1E] py-3 rounded-xl font-bold hover:bg-[#FFF8F0] transition-all"
+                          >
+                            Edit Features
+                          </button>
+                          
+                          {deletePending === booking.id ? (
+                            <button
+                              onClick={() => deleteBooking(booking.id)}
+                              className="flex-grow bg-red-600 text-white py-3 rounded-xl font-bold hover:bg-red-700 transition-all animate-pulse"
+                            >
+                              Confirm Delete?
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => setDeletePending(booking.id)}
+                              className="bg-red-50 text-red-600 px-6 py-3 rounded-xl font-bold hover:bg-red-100 transition-all border border-red-100"
+                            >
+                              Delete
+                            </button>
+                          )}
+                        </div>
+
+                        {deletePending === booking.id && (
+                          <button 
+                            onClick={() => setDeletePending(null)}
+                            className="w-full text-[10px] text-gray-400 uppercase font-bold tracking-widest hover:text-gray-600"
+                          >
+                            Cancel Deletion
+                          </button>
+                        )}
+                        
+                        <a 
+                          href={`https://wa.me/${booking.phone}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex items-center justify-center gap-2 w-full bg-[#25D366] text-white py-3 rounded-xl font-bold hover:shadow-lg transition-all"
+                        >
+                          Contact via WhatsApp <ExternalLink size={14} />
+                        </a>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -321,6 +380,14 @@ const AdminDashboard = () => {
           )}
         </div>
       </main>
+
+      {editingBooking && (
+        <EditBookingModal 
+          booking={editingBooking}
+          onClose={() => setEditingBooking(null)}
+          onSave={handleUpdateSave}
+        />
+      )}
     </div>
   );
 };

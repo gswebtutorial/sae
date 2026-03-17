@@ -8,19 +8,31 @@ interface ClientFormProps {
   selectedSelections: Record<string, string[]>;
   onClose: () => void;
   onSuccess: () => void;
+  initialData?: any;
 }
 
-const ClientForm = ({ selectedSelections, onClose, onSuccess }: ClientFormProps) => {
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm();
+const ClientForm = ({ selectedSelections, onClose, onSuccess, initialData }: ClientFormProps) => {
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({
+    defaultValues: initialData ? {
+      clientName: initialData.client_name,
+      phone: initialData.phone,
+      weddingDate: initialData.wedding_date,
+      city: initialData.city,
+      venue: initialData.venue,
+      email: initialData.email,
+      guestCount: initialData.guest_count,
+      notes: initialData.notes,
+    } : {}
+  });
 
   const onSubmit = async (data: any) => {
     try {
-      // API call placeholder for now
       const response = await fetch('/api/bookings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...data,
+          id: initialData?.id, // Pass ID if updating
           selectedFunctions: selectedSelections
         }),
       });
@@ -28,19 +40,18 @@ const ClientForm = ({ selectedSelections, onClose, onSuccess }: ClientFormProps)
       if (response.ok) {
         onSuccess();
       } else {
-        alert("Failed to submit booking. We will complete the API integration in the next stage.");
-        // For development purposes, let's trigger success even if API fails (since we haven't built it yet)
-        onSuccess();
+        const resData = await response.json();
+        alert(resData.error || "Failed to submit booking.");
       }
     } catch (error) {
       console.error(error);
-      onSuccess();
+      alert("Something went wrong. Please try again.");
     }
   };
 
   return (
     <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-md">
-      <div className="bg-[#FFF8F0] w-full max-w-2xl h-[90vh] sm:h-auto sm:max-h-[90vh] rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-bottom duration-300">
+      <div className="bg-[#FFF8F0] w-full max-w-md h-[90vh] sm:h-auto sm:max-h-[90vh] rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-bottom duration-300">
         <div className="bg-[#7B1E1E] p-6 text-white flex justify-between items-center sticky top-0 z-10">
           <div>
             <h2 className="text-2xl font-bold font-serif leading-none mb-1 text-[#FFF8F0]">Complete Your Booking</h2>
@@ -69,40 +80,32 @@ const ClientForm = ({ selectedSelections, onClose, onSuccess }: ClientFormProps)
           </div>
 
           {/* Form */}
-          <form id="booking-form" onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <form id="booking-form" onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="space-y-1">
               <label className="text-xs font-bold text-[#7B1E1E] uppercase flex items-center gap-1">
                 <User size={14} className="text-[#C9973A]" /> Full Name *
               </label>
               <input 
                 {...register("clientName", { required: true })}
-                className="w-full bg-white border border-[#C9973A]/30 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7B1E1E]/20"
-                placeholder="Ramesh Sharma"
+                className="w-full bg-white border border-[#C9973A]/30 p-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7B1E1E]/20"
+                placeholder="e.g. Ramesh Sharma"
               />
               {errors.clientName && <span className="text-red-500 text-[10px]">Required</span>}
             </div>
 
             <div className="space-y-1">
               <label className="text-xs font-bold text-[#7B1E1E] uppercase flex items-center gap-1">
-                <Phone size={14} className="text-[#C9973A]" /> Phone *
+                <Phone size={14} className="text-[#C9973A]" /> Phone Number *
               </label>
               <input 
-                {...register("phone", { required: true, pattern: /^\d{10}$/ })}
-                className="w-full bg-white border border-[#C9973A]/30 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7B1E1E]/20"
-                placeholder="9876543210"
+                {...register("phone", { 
+                  required: true, 
+                  pattern: { value: /^[0-9+]{10,15}$/, message: "Valid phone required" } 
+                })}
+                className="w-full bg-white border border-[#C9973A]/30 p-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7B1E1E]/20"
+                placeholder="e.g. 9876543210"
               />
-              {errors.phone && <span className="text-red-500 text-[10px]">Valid 10-digit number required</span>}
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-[#7B1E1E] uppercase flex items-center gap-1">
-                <Calendar size={14} className="text-[#C9973A]" /> Wedding Date *
-              </label>
-              <input 
-                type="date"
-                {...register("weddingDate", { required: true })}
-                className="w-full bg-white border border-[#C9973A]/30 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7B1E1E]/20"
-              />
+              {errors.phone && <span className="text-red-500 text-[10px]">Required (10+ digits)</span>}
             </div>
 
             <div className="space-y-1">
@@ -111,56 +114,10 @@ const ClientForm = ({ selectedSelections, onClose, onSuccess }: ClientFormProps)
               </label>
               <input 
                 {...register("city", { required: true })}
-                className="w-full bg-white border border-[#C9973A]/30 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7B1E1E]/20"
-                placeholder="Raipur"
+                className="w-full bg-white border border-[#C9973A]/30 p-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7B1E1E]/20"
+                placeholder="e.g. Your City"
               />
-            </div>
-
-            <div className="md:col-span-2 space-y-1">
-              <label className="text-xs font-bold text-[#7B1E1E] uppercase flex items-center gap-1">
-                <MapPin size={14} className="text-[#C9973A]" /> Venue / Location *
-              </label>
-              <input 
-                {...register("venue", { required: true })}
-                className="w-full bg-white border border-[#C9973A]/30 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7B1E1E]/20"
-                placeholder="Sayaji Hotel, Magneto Mall Road"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-[#7B1E1E] uppercase flex items-center gap-1">
-                <Mail size={14} className="text-[#C9973A]" /> Email
-              </label>
-              <input 
-                type="email"
-                {...register("email")}
-                className="w-full bg-white border border-[#C9973A]/30 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7B1E1E]/20"
-                placeholder="ramesh@example.com"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-[#7B1E1E] uppercase flex items-center gap-1">
-                <Users size={14} className="text-[#C9973A]" /> Guest Count
-              </label>
-              <input 
-                type="number"
-                {...register("guestCount")}
-                className="w-full bg-white border border-[#C9973A]/30 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7B1E1E]/20"
-                placeholder="500"
-              />
-            </div>
-
-            <div className="md:col-span-2 space-y-1">
-              <label className="text-xs font-bold text-[#7B1E1E] uppercase flex items-center gap-1">
-                <MessageSquare size={14} className="text-[#C9973A]" /> Message / Special Notes
-              </label>
-              <textarea 
-                {...register("notes")}
-                rows={3}
-                className="w-full bg-white border border-[#C9973A]/30 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7B1E1E]/20"
-                placeholder="Any special requirements..."
-              />
+              {errors.city && <span className="text-red-500 text-[10px]">Required</span>}
             </div>
           </form>
         </div>

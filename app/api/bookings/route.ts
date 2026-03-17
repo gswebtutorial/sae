@@ -2,36 +2,52 @@ import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { sendWhatsApp } from '@/lib/sendWhatsApp';
 
-// POST /api/bookings — client submits a new booking
+// POST /api/bookings — client submits or updates a booking
 export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    const { data, error } = await supabase
-      .from('bookings')
-      .insert([{
-        client_name: body.clientName,
-        phone: body.phone,
-        email: body.email || null,
-        wedding_date: body.weddingDate,
-        venue: body.venue,
-        city: body.city,
-        guest_count: body.guestCount ? parseInt(body.guestCount) : null,
-        notes: body.notes || null,
-        selected_functions: body.selectedFunctions,
-      }])
-      .select()
-      .single();
+    const bookingData: any = {
+      client_name: body.clientName,
+      phone: body.phone,
+      email: body.email || null,
+      city: body.city,
+      wedding_date: body.weddingDate || '2024-01-01', // Fallback for schema if NOT NULL but we simplified UI
+      venue: body.venue || 'Not Specified',
+      guest_count: body.guestCount ? parseInt(body.guestCount) : null,
+      notes: body.notes || null,
+      selected_functions: body.selectedFunctions,
+      submitted_at: new Date().toISOString(),
+    };
 
-    if (error) throw error;
+    let result;
+    if (body.id) {
+      // Update existing booking
+      result = await supabase
+        .from('bookings')
+        .update(bookingData)
+        .eq('id', body.id)
+        .select()
+        .single();
+    } else {
+      // Insert new booking
+      result = await supabase
+        .from('bookings')
+        .insert([bookingData])
+        .select()
+        .single();
+    }
 
-    // Proactively notify admin via WhatsApp
-    // We wrap this in a fire-and-forget style or at least don't let it block
-    // but Next.js edge/serverless might kill it if we don't await. 
-    // Given the importance, we await.
-    await sendWhatsApp(data);
+    if (result.error) throw result.error;
 
-    return NextResponse.json({ success: true, bookingId: data.id }, { status: 201 });
+    // Notify admin via WhatsApp (of both new and updated bookings)
+    await sendWhatsApp(result.data);
+
+    return NextResponse.json({ 
+      success: true, 
+      bookingId: result.data.id,
+      isUpdate: !!body.id 
+    }, { status: body.id ? 200 : 201 });
   } catch (err: any) {
     console.error('Booking submission error:', err);
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });

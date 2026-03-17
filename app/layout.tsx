@@ -14,8 +14,8 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "Shree Annapurna Events | Wedding Booking Raipur",
-  description: "Plan your dream wedding with Raipur's finest event managers. Browse services, checklists and book your wedding functions easily.",
+  title: "Shree Annapurna Events | Wedding Booking",
+  description: "Plan your dream wedding with luxury event management. Browse services, checklists and book your wedding functions easily.",
 };
 
 export default function RootLayout({
