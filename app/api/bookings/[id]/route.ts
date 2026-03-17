@@ -21,6 +21,10 @@ export async function PATCH(
 
     const { status } = await request.json();
 
+    if (!supabase) {
+      return NextResponse.json({ error: 'Database not configured' }, { status: 503 });
+    }
+
     const { data, error } = await supabase
       .from('bookings')
       .update({ status })
@@ -48,6 +52,10 @@ export async function PUT(
     }
 
     const body = await request.json();
+
+    if (!supabase) {
+      return NextResponse.json({ error: 'Database not configured' }, { status: 503 });
+    }
 
     const { data, error } = await supabase
       .from('bookings')
@@ -84,6 +92,10 @@ export async function DELETE(
     const { id } = await params;
     if (!authorizeAdmin(request)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (!supabase) {
+      return NextResponse.json({ error: 'Database not configured' }, { status: 503 });
     }
 
     const { error } = await supabase

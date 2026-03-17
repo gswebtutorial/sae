@@ -7,6 +7,13 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
+    if (!supabase) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Database not configured. Please add Supabase keys to Vercel Environment Variables.' 
+      }, { status: 503 });
+    }
+
     const bookingData: any = {
       client_name: body.clientName,
       phone: body.phone,
